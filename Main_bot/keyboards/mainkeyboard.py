@@ -24,5 +24,3 @@ keyboard_currency_list = ReplyKeyboardMarkup(
     keyboard=
         get_list_of_currency_buttons(pull_of_instruments)
             )
-
-print(get_list_of_currency_buttons(pull_of_instruments))
