@@ -1,7 +1,7 @@
 import requests
 import ccxt
 from binance.client import Client
-from Config.settings import API_KEY, API_SECRET
+from Config.settings import BINANCE_KEY, BINANCE_SECRET
 from Main_bot.utils.forcast import get_binance_signals
 
 #Constants
@@ -10,8 +10,8 @@ exchange_info = requests.get(f"{binance_api_url}/exchangeInfo").json()
 
 #Creating object Binance API
 binance = ccxt.binance({
-    'apiKey': API_KEY,
-    'secret': API_SECRET,
+    'apiKey': BINANCE_KEY,
+    'secret': BINANCE_SECRET,
 })
 
 #all timeframes form API
@@ -69,27 +69,30 @@ def get_liquidity_instruments(symbols, volume):
     return liquid_pairs
 
 #Creting pull of liquid instruments with volume of 1000000 usd per 24h
-pull_of_instruments = get_liquidity_instruments(get_usdt_pairs(),10000000)
+pull_of_instruments = get_liquidity_instruments(get_usdt_pairs(),50000000)
 
 
-def get_current_price(api_key, api_secret, symbol, timeframe='1m', limit=1):
-    client = Client(api_key, api_secret)
+def get_current_price(symbol, timeframe='1m'):
+    client = Client(BINANCE_KEY, BINANCE_SECRET)
+    limit = 1
     klines = client.get_klines(symbol=symbol, interval=timeframe, limit=limit)
     if klines:
         return float(klines[0][4])
     else:
         return None
 
-def get_timeframe_volume(api_key, api_secret, symbol, timeframe, limit=1):
-    client = Client(api_key, api_secret)
+def get_timeframe_volume(symbol, timeframe):
+    client = Client(BINANCE_KEY, BINANCE_SECRET)
+    limit = 1
     klines = client.get_klines(symbol=symbol, interval=timeframe, limit=limit)
     if klines:
         return float(klines[0][5])
     else:
         return None
 
-def get_binance_max(api_key, api_secret, symbol, timeframe, limit=1):
-    client = Client(api_key, api_secret)
+def get_binance_max(symbol, timeframe):
+    client = Client(BINANCE_KEY, BINANCE_SECRET)
+    limit = 1
     klines = client.get_klines(symbol=symbol, interval=timeframe, limit=limit)
     if klines:
         highs = [str(float(k[2])) for k in klines]
@@ -98,8 +101,9 @@ def get_binance_max(api_key, api_secret, symbol, timeframe, limit=1):
     else:
         return None
 
-def get_binance_min(api_key, api_secret, symbol, timeframe, limit=1):
-    client = Client(api_key, api_secret)
+def get_binance_min(symbol, timeframe):
+    client = Client(BINANCE_KEY, BINANCE_SECRET)
+    limit = 1
     klines = client.get_klines(symbol=symbol, interval=timeframe, limit=limit)
     if klines:
         lows = [str(float(k[3])) for k in klines]
@@ -110,14 +114,14 @@ def get_binance_min(api_key, api_secret, symbol, timeframe, limit=1):
 
 
 #Command of getting general information for {symbol} and {timeframe} setted by user
-def get_currency_info(symbol,timeframe):
+def get_currency_info(symbol,timeframe = '1d'):
     # Creating modified symbol for currencies (examples: modified_symbol = BTC, ETH, XRP, etc.)
     modified_symbol = symbol.replace('USDT', '')
-    current_price = get_current_price(API_KEY, API_SECRET, symbol, timeframe=timeframe, limit=1)
-    current_volume = get_timeframe_volume(API_KEY, API_SECRET, symbol, timeframe=timeframe, limit=1)
-    max_price = get_binance_max(API_KEY, API_SECRET, symbol, timeframe=timeframe, limit=1)
-    min_price = get_binance_min(API_KEY, API_SECRET, symbol, timeframe=timeframe, limit=1)
-    avg_price_timeframe = (float(max_price)+float(min_price))/2
+    current_price = get_current_price(symbol, timeframe=timeframe)
+    current_volume = get_timeframe_volume(symbol, timeframe=timeframe)
+    max_price = get_binance_max(symbol, timeframe=timeframe)
+    min_price = get_binance_min(symbol, timeframe=timeframe)
+    avg_price_timeframe = round((float(max_price)+float(min_price))/2,2)
     div_absolute = round(avg_price_timeframe - current_price,2)
     div_percentage = round(div_absolute/current_price,3)
     print(f'Here is the general information from Binance for {modified_symbol} with {modify_timeframe(timeframe)} timeframe:\n'
