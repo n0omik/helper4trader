@@ -138,4 +138,4 @@ def get_currency_info(symbol,timeframe = '1d'):
            f'Binance Forecast: {get_binance_signals(symbol)}')
 
 
-#print(get_currency_info("BTCUSDT","1d"))
+print(get_currency_info("BTCUSDT","1d"))
