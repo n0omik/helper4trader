@@ -69,7 +69,7 @@ def get_liquidity_instruments(symbols, volume):
     return liquid_pairs
 
 #Creting pull of liquid instruments with volume of 1000000 usd per 24h
-pull_of_instruments = get_liquidity_instruments(get_usdt_pairs(),50000000)
+pull_of_instruments = get_liquidity_instruments(get_usdt_pairs(),10000000)
 
 
 def get_current_price(symbol, timeframe='1m'):
@@ -124,18 +124,18 @@ def get_currency_info(symbol,timeframe = '1d'):
     avg_price_timeframe = round((float(max_price)+float(min_price))/2,2)
     div_absolute = round(avg_price_timeframe - current_price,2)
     div_percentage = round(div_absolute/current_price,3)
-    print(f'Here is the general information from Binance for {modified_symbol} with {modify_timeframe(timeframe)} timeframe:\n'
-          f'Instrument: {modified_symbol}\n'
-          f'Timeframe: {modify_timeframe(timeframe)}\n'
-          f'Current price: {current_price}\n'
-          f'Trading volume of last candle with {modify_timeframe(timeframe)} timeframe: {current_volume} {modified_symbol}\n'
-          f'Maximum price in the last {modify_timeframe(timeframe)}: ${max_price}\n'
-          f'Minimum price in the last {modify_timeframe(timeframe)}: ${min_price}\n'
-           f'Average price in the last {modify_timeframe(timeframe)}: ${avg_price_timeframe}\n'
-           f'Deviation from the average price in the last {modify_timeframe(timeframe)}:\n'
-           f'In absolute terms: ${div_absolute}\n'
-           f'In percentage: {div_percentage}%\n'
-           f'Binance Forecast: {get_binance_signals(symbol)}')
+    text=    f'Here is the general information from Binance for {modified_symbol} with {modify_timeframe(timeframe)} timeframe:\n'\
+              f'Instrument: {modified_symbol}\n'\
+              f'Timeframe: {modify_timeframe(timeframe)}\n'\
+              f'Current price: {current_price}\n'\
+              f'Trading volume of last candle with {modify_timeframe(timeframe)} timeframe: {current_volume} {modified_symbol}\n'\
+              f'Maximum price in the last {modify_timeframe(timeframe)}: ${max_price}\n'\
+              f'Minimum price in the last {modify_timeframe(timeframe)}: ${min_price}\n'\
+               f'Average price in the last {modify_timeframe(timeframe)}: ${avg_price_timeframe}\n'\
+               f'Deviation from the average price in the last {modify_timeframe(timeframe)}:\n'\
+               f'In absolute terms: ${div_absolute}\n'\
+               f'In percentage: {div_percentage}%\n'\
+               f'Binance Forecast: {get_binance_signals(symbol)}'
+    return text
 
-
-print(get_currency_info("BTCUSDT","1d"))
+print(type(get_currency_info("BTCUSDT","1d")))

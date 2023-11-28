@@ -1,5 +1,6 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from Main_bot.utils.binance_api import pull_of_instruments
+from aiogram.utils.keyboard import ReplyKeyboardBuilder,InlineKeyboardBuilder
 
 keyboard_main_commands = ReplyKeyboardMarkup(
     resize_keyboard=True,
@@ -18,6 +19,13 @@ def get_list_of_currency_buttons(pull_of_instruments):
         button = KeyboardButton(text=f'{currency}')
         list_of_currency_buttons.append([button])
     return list_of_currency_buttons
+
+# def keyboard_currency_list(pull_of_instruments):
+#     builder = InlineKeyboardBuilder()
+#     for instrument in pull_of_instruments:
+#         builder.button(text = instrument, callback_data="instrument")
+#     return builder.as_markup(resize_keyboard=True)
+
 
 keyboard_currency_list = ReplyKeyboardMarkup(
     resize_keyboard=True,
