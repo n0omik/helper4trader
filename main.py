@@ -3,13 +3,8 @@ import logging
 from aiogram import Bot, Dispatcher
 from Config.settings import TOKEN
 from aiogram.enums.parse_mode import ParseMode
-#from Main_bot.handlers.base_handler import start_handler
 from Main_bot.handlers.base_handler import router
 from Main_bot.commands import set_commands
-#from Main_bot.utils.binance_api import get_liquidity_instruments, get_usdt_pairs
-
-# async def start_bot(bot:Bot):
-#     pass
 
 
 async def main():
@@ -25,6 +20,7 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
+
 
 
 

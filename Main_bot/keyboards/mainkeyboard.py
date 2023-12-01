@@ -1,6 +1,6 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from Main_bot.utils.binance_api import pull_of_instruments, timeframe_reterned
-from aiogram.utils.keyboard import ReplyKeyboardBuilder,InlineKeyboardBuilder
+#from aiogram.utils.keyboard import ReplyKeyboardBuilder,InlineKeyboardBuilder
 
 keyboard_main_commands = ReplyKeyboardMarkup(
     resize_keyboard=True,
