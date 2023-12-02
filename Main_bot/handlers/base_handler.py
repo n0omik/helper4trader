@@ -11,7 +11,6 @@ from aiogram.fsm.context import FSMContext
 
 router = Router()
 
-
 @router.message(Command('start'))
 async def start_handler(message:Message):
     await message.answer(START_MESSAGE,reply_markup=keyboard_main_commands)
@@ -30,12 +29,12 @@ async def get_exchange_info(message: Message,state:FSMContext):
 
 @router.message(CurrencyState.CHOOSE_TIMEFRAME,F.text.in_(timeframe_reterned))
 async def get_exchange_info(message: Message, state: FSMContext):
+    await message.answer(text='Please wait for a response. This may take up to 15 seconds.')
     timeframe = message.text
     data = await state.get_data()
     symbol = data.get('currency', None)
     await state.update_data(timeframe = timeframe)
     await message.answer(get_currency_info(symbol,timeframe_reterned.get(timeframe)))
-
 
 @router.message(F.text=='Get general project information for coin')
 async def get_project_info_keyboard(message:Message, state:FSMContext):
@@ -45,9 +44,8 @@ async def get_project_info_keyboard(message:Message, state:FSMContext):
 @router.message(CurrencyState.CHOOSE_PROJECT, F.text.in_(pull_of_instruments))
 async def get_project_info(message: Message, state: FSMContext):
     symbol = message.text
+    await message.answer(text='Please wait for a response, we ask for an AI response to be prepared. This may take up to 1 minute.')
     await state.get_data()
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, lambda: asyncio.run(get_project_info_openai(symbol)))
     await message.answer(result)
-
-
