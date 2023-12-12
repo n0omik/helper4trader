@@ -8,16 +8,20 @@ from Main_bot.utils.binance_api import pull_of_instruments, get_currency_info, t
 from Main_bot.keyboards.mainkeyboard import keyboard_main_commands,keyboard_currency_list, keyboard_timeframes_list
 from Main_bot.states.states_main import CurrencyState
 from aiogram.fsm.context import FSMContext
+from ..keyboards.pagenation import ReplyKeyboardPaginator
+
+
+pagination_keyboard = ReplyKeyboardPaginator(pull_of_instruments)
 
 router = Router()
-
+router.include_router(pagination_keyboard.get_pagination_handler())
 @router.message(Command('start'))
 async def start_handler(message:Message):
     await message.answer(START_MESSAGE,reply_markup=keyboard_main_commands)
 
 @router.message(F.text=='Get general exchange information for coin')
 async def chose_instrument(message:Message, state:FSMContext):
-    await message.answer(INSTRUMENTS_LIST,reply_markup=keyboard_currency_list)
+    await message.answer(INSTRUMENTS_LIST,reply_markup=pagination_keyboard.get_keyboard())
     await state.set_state(CurrencyState.CHOOSE_CURRENCY)
 
 @router.message(CurrencyState.CHOOSE_CURRENCY,F.text.in_(pull_of_instruments))
@@ -49,3 +53,4 @@ async def get_project_info(message: Message, state: FSMContext):
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, lambda: asyncio.run(get_project_info_openai(symbol)))
     await message.answer(result)
+    

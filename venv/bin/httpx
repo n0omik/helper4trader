@@ -1,6 +1,4 @@
-#!/bin/sh
-'''exec' "/Users/pasharybalchenko/Telegram_bot v2/venv/bin/python3.11" "$0" "$@"
-' '''
+#!/Users/pasharybalchenko/Python_projects/Telegram_bot_main/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
