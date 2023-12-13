@@ -1,6 +1,6 @@
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from aiogram.types import KeyboardButton
-
+import math
 from aiogram import F, Router, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
@@ -17,6 +17,9 @@ class ReplyKeyboardPaginator:
 
     def get_page_size(self):
         return self._page_size
+
+    def get_max_pages(self):
+        return math.ceil(len(self._data_list) / self._page_size) - 1
 
     def set_page_size(self, page_size: int):
         if not isinstance(page_size, int):
@@ -38,11 +41,10 @@ class ReplyKeyboardPaginator:
 
     def get_page(self):
         builder = ReplyKeyboardBuilder()
-        print((len(self._data_list)/self._page_size -1))
-        print(self._current_page)
+        max_pages = self.get_max_pages()
         for line in self._list_btn_serializer()[self._current_page]:
             builder.row(*line)
-        if self._current_page != 0 and self._current_page != (len(self._data_list)/self._page_size-1):
+        if self._current_page != 0 and self._current_page != max_pages:
             builder.row(
                 KeyboardButton(text='⬅'),
                 KeyboardButton(text='➡'),
@@ -51,7 +53,7 @@ class ReplyKeyboardPaginator:
             builder.row(
                 KeyboardButton(text='➡'),
             )
-        elif self._current_page >= (len(self._data_list)/self._page_size-1):
+        elif self._current_page >= max_pages:
             builder.row(
                 KeyboardButton(text='⬅')
             )
@@ -67,12 +69,13 @@ class ReplyKeyboardPaginator:
         @router.message(F.text.in_(['⬅', '➡']))
         async def pagination_handler(message: Message, bot: Bot, state: FSMContext):
             await message.delete()
+            max_pages = self.get_max_pages()
             if message.text == '⬅':
                 self._current_page = (self._current_page - 1) if self._current_page - 1 > 0 else 0
             elif message.text == '➡':
                 self._current_page = (self._current_page + 1) if len(
                     self._data_list) / self._page_size - 1 > self._current_page else self._current_page
-            last_message = await message.answer('showed', reply_markup=self.get_page())
+            last_message = await message.answer(f'Page {self._current_page}/{max_pages}', reply_markup=self.get_page())
             if self._delete_preview_message:
                 data = await state.get_data()
                 await state.update_data(message_id=last_message.message_id)

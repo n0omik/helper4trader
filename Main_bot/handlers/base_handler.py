@@ -8,7 +8,7 @@ from Main_bot.utils.binance_api import pull_of_instruments, get_currency_info, t
 from Main_bot.keyboards.mainkeyboard import keyboard_main_commands,keyboard_currency_list, keyboard_timeframes_list
 from Main_bot.states.states_main import CurrencyState
 from aiogram.fsm.context import FSMContext
-from ..keyboards.pagenation import ReplyKeyboardPaginator
+from ..keyboards.pagination import ReplyKeyboardPaginator
 
 
 pagination_keyboard = ReplyKeyboardPaginator(pull_of_instruments)
