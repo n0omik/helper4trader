@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from aiogram import Bot, Dispatcher
-from Config.settings import TOKEN
+from Config.settings import Config
 from aiogram.enums.parse_mode import ParseMode
 from Main_bot.handlers.base_handler import router
 from Main_bot.commands import set_commands
@@ -11,7 +11,7 @@ from aiogram.fsm.storage.redis import RedisStorage
 
 async def main():
     logging.basicConfig(level=logging.INFO)
-    bot = Bot(TOKEN,parse_mode=ParseMode.HTML)
+    bot = Bot(Config.TOKEN,parse_mode=ParseMode.HTML)
     await set_commands(bot)
     storage = RedisStorage.from_url(f'redis://localhost:6379/0')
     dp = Dispatcher(storage=storage)

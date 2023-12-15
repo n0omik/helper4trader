@@ -42,7 +42,7 @@ async def get_exchange_info(message: Message, state: FSMContext):
 
 @router.message(F.text=='Get general project information for coin')
 async def get_project_info_keyboard(message:Message, state:FSMContext):
-    await message.answer(PROJECT_INFO,reply_markup=keyboard_currency_list)
+    await message.answer(PROJECT_INFO,pagination_keyboard.get_keyboard())
     await state.set_state(CurrencyState.CHOOSE_PROJECT)
 
 @router.message(CurrencyState.CHOOSE_PROJECT, F.text.in_(pull_of_instruments))

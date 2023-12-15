@@ -1,7 +1,7 @@
 import requests
 import ccxt
 from binance.client import Client
-from Config.settings import BINANCE_KEY, BINANCE_SECRET
+from Config.settings import Config
 from Main_bot.utils.forcast import get_binance_signals
 
 #Constants
@@ -10,8 +10,8 @@ exchange_info = requests.get(f"{binance_api_url}/exchangeInfo").json()
 
 #Creating object Binance API
 binance = ccxt.binance({
-    'apiKey': BINANCE_KEY,
-    'secret': BINANCE_SECRET,
+    'apiKey': Config.BINANCE_KEY,
+    'secret': Config.BINANCE_SECRET,
 })
 
 #all timeframes form API
@@ -112,7 +112,7 @@ pull_of_instruments = get_liquidity_instruments(get_usdt_pairs(),10000000)
 
 
 def get_current_price(symbol, timeframe='1m'):
-    client = Client(BINANCE_KEY, BINANCE_SECRET)
+    client = Client(Config.BINANCE_KEY, Config.BINANCE_SECRET)
     limit = 1
     klines = client.get_klines(symbol=symbol, interval=timeframe, limit=limit)
     if klines:
@@ -121,7 +121,7 @@ def get_current_price(symbol, timeframe='1m'):
         return None
 
 def get_timeframe_volume(symbol, timeframe):
-    client = Client(BINANCE_KEY, BINANCE_SECRET)
+    client = Client(Config.BINANCE_KEY, Config.BINANCE_SECRET)
     limit = 1
     klines = client.get_klines(symbol=symbol, interval=timeframe, limit=limit)
     if klines:
@@ -130,7 +130,7 @@ def get_timeframe_volume(symbol, timeframe):
         return None
 
 def get_binance_max(symbol, timeframe):
-    client = Client(BINANCE_KEY, BINANCE_SECRET)
+    client = Client(Config.BINANCE_KEY, Config.BINANCE_SECRET)
     limit = 1
     klines = client.get_klines(symbol=symbol, interval=timeframe, limit=limit)
     if klines:
@@ -141,7 +141,7 @@ def get_binance_max(symbol, timeframe):
         return None
 
 def get_binance_min(symbol, timeframe):
-    client = Client(BINANCE_KEY, BINANCE_SECRET)
+    client = Client(Config.BINANCE_KEY, Config.BINANCE_SECRET)
     limit = 1
     klines = client.get_klines(symbol=symbol, interval=timeframe, limit=limit)
     if klines:

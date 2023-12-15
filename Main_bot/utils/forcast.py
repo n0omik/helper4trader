@@ -1,8 +1,8 @@
 from binance.client import Client
 import numpy as np
-from Config.settings import BINANCE_KEY, BINANCE_SECRET
+from Config.settings import Config
 
-client = Client(BINANCE_KEY, BINANCE_SECRET)
+client = Client(Config.BINANCE_KEY, Config.BINANCE_SECRET)
 
 
 def get_binance_signals(symbol):

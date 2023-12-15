@@ -1,8 +1,8 @@
 import asyncio
 from openai import OpenAI
-from Config.settings import OPENAI_KEY
+from Config.settings import Config
 
-client = OpenAI(api_key=OPENAI_KEY)
+client = OpenAI(api_key=Config.OPENAI_KEY)
 
 
 async def openai_request(symbol):
