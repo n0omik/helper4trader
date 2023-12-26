@@ -5,3 +5,5 @@ class CurrencyState(StatesGroup):
     CHOOSE_CURRENCY = State()
     CHOOSE_TIMEFRAME = State()
     CHOOSE_PROJECT = State()
+    SET_ALERT = State()
+    SET_ALERT_PRICE = State()

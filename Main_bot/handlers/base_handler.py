@@ -1,15 +1,17 @@
 import asyncio
+import json
 from aiogram.types import Message
-from aiogram import types, Router, F
+from aiogram import types, Router, F, Bot
 from aiogram.filters import Command, CommandStart
-from ..Text import START_MESSAGE, INSTRUMENTS_LIST, TIMEFRAME_LIST, PROJECT_INFO
+from ..Text import START_MESSAGE, INSTRUMENTS_LIST, TIMEFRAME_LIST, PROJECT_INFO, SET_ALERT
 from Main_bot.utils.openai_api import get_project_info_openai
 from Main_bot.utils.binance_api import pull_of_instruments, get_currency_info, timeframe_reterned
 from Main_bot.keyboards.mainkeyboard import keyboard_main_commands,keyboard_currency_list, keyboard_timeframes_list
 from Main_bot.states.states_main import CurrencyState
 from aiogram.fsm.context import FSMContext
 from ..keyboards.pagination import ReplyKeyboardPaginator
-
+from ..utils.redis_storage import storage
+from ..utils.task_manager import set_alert_job
 
 pagination_keyboard = ReplyKeyboardPaginator(pull_of_instruments)
 
@@ -53,4 +55,38 @@ async def get_project_info(message: Message, state: FSMContext):
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, lambda: asyncio.run(get_project_info_openai(symbol)))
     await message.answer(result)
-    
+
+@router.message(F.text=='Get coin news')
+async def get_coin_news(message:Message):
+    data = json.loads(storage.get('news'))["news"]
+    for new in data:
+        answer_text = (f'<b>{new["title"]}</b>\n'
+                       f'{new["text"]}\n'
+                       f'{new["link"]}\n\n'
+                       f'{new["date"]}')
+        await message.answer(text=answer_text)
+
+
+@router.message(F.text=='Set price notification for instrument')
+async def set_alert(message:Message, state:FSMContext):
+    await message.answer(INSTRUMENTS_LIST,reply_markup=pagination_keyboard.get_keyboard())
+    await state.set_state(CurrencyState.SET_ALERT)
+
+@router.message(CurrencyState.SET_ALERT, F.text.in_(pull_of_instruments))
+async def alert_set_currency(message:Message, state:FSMContext):
+    await message.answer(SET_ALERT)
+    await state.set_state(CurrencyState.SET_ALERT_PRICE)
+
+@router.message(CurrencyState.SET_ALERT_PRICE)
+async def alert_set_price(message:Message, state:FSMContext, bot:Bot):
+    try:
+        price = float(message.text) if "," not in message.text else float(message.text.replace(",","."))
+        set_alert_job(price, chat_id=message.from_user.id)
+        await message.answer('Alert seted')
+        await state.clear()
+    except ValueError:
+        await message.answer("Please try again")
+
+
+
+

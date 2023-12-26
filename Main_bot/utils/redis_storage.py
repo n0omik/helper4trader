@@ -7,3 +7,4 @@ storage = Redis(
     db=3,
     decode_responses=True,
 )
+
