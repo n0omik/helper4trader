@@ -1,6 +1,6 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from Main_bot.utils.binance_api import pull_of_instruments, timeframe_reterned
-#from aiogram.utils.keyboard import ReplyKeyboardBuilder,InlineKeyboardBuilder
+from aiogram.utils.keyboard import InlineKeyboardMarkup, InlineKeyboardButton
 
 keyboard_main_commands = ReplyKeyboardMarkup(
     resize_keyboard=True,
@@ -45,3 +45,10 @@ keyboard_timeframes_list = ReplyKeyboardMarkup(
     keyboard=
         get_list_of_timeframes_buttons(timeframe_reterned)
             )
+
+
+
+alet_direction_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='⬆', callback_data='up'),
+         InlineKeyboardButton(text='⬇', callback_data='down')]
+    ])

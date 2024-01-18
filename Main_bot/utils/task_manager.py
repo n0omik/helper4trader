@@ -29,7 +29,3 @@ async def send_notification(bot:Bot, price:float, chat_id):
 
 def set_alert_job(price, chat_id):
     schedueler.add_job(send_notification, 'interval', seconds = 1, kwargs={'price':price, 'chat_id':chat_id})
-
-
-
-

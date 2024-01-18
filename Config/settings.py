@@ -18,5 +18,6 @@ class Config:
     BINANCE_SECRET = os.getenv("BINANCE_SECRET")
     OPENAI_KEY = os.getenv("OPENAI_KEY")
     DATABASE_URL = ""
+    LIQUIDITY_VOLUME = 10000000
 
 

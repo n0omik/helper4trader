@@ -7,3 +7,4 @@ class CurrencyState(StatesGroup):
     CHOOSE_PROJECT = State()
     SET_ALERT = State()
     SET_ALERT_PRICE = State()
+    CHOOSE_DIRECTION= State()

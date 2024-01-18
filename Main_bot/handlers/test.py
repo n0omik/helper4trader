@@ -1,20 +1,58 @@
-timeframe_reterned = {
-        '1 minute':'1m',
-        '3 minutes':"3m",
-        '5 minutes':"5m",
-        '15 minutes':"15m",
-        '30 minutes':"30m",
-        '1 hour':"1h",
-        '2 hours':"2h",
-        '4 hours':"4h",
-        '6 hours':"6h",
-        '8 hours':"8h",
-        '12 hours':"12h",
-        '24 hours':"24h",
-        '3 days':"3d",
-        '1 week':"1w",
-        '1 month':"1M"
+import asyncio
+import json
+
+import websockets
+
+BINANCE_KEY = 'gpmetY3J1WFMidb6QgqwjqWSCoNHfjWySLCwcxikhOPvV71YaSz9ewmaybkEirWp'
+BINANCE_SECRET = 'LWm12UY1f02z8ozqBNJzoLWTLgBEFPFCcTKpf6T3FnwEMuDCjcKpEY21YbAzx1YU'
+alerts = []
+
+
+def send_message(text):
+    pass
+
+
+async def on_open(ws):
+    sub_msg = {
+        "method": "SUBSCRIBE",
+        "params": [
+            "!miniTicker@arr",
+        ],
+        "id": 1,
     }
 
+    await ws.send(json.dumps(sub_msg))
+    print('open connection')
 
-print("2 hours") if "2 hours" in timeframe_reterned else None
+
+async def alert_down(symbol, price, data):
+    # print(data)
+    try:
+        for x in data:
+            if x['s'] == 'BTCUSDT':
+                print('BTCUSDT', x['c'])
+            if x['s'] == symbol and float(x['c']) <= price:
+                print(f'--{x["s"]} {x["c"]}--')
+                send_message(f'{x["s"]} {x["c"]}')
+    except:
+        pass
+
+
+async def on_message(ws, message):
+    data = json.loads(message)
+    await alert_down('BTCUSDT', 44050, data)
+
+
+async def main():
+    url = 'wss://stream.binance.com/ws'
+
+    async with websockets.connect(url) as ws:
+        await on_open(ws)
+
+        while True:
+            response = await ws.recv()
+            await on_message(ws, response)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

@@ -1,12 +1,13 @@
 import asyncio
 import json
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from aiogram import types, Router, F, Bot
 from aiogram.filters import Command, CommandStart
 from ..Text import START_MESSAGE, INSTRUMENTS_LIST, TIMEFRAME_LIST, PROJECT_INFO, SET_ALERT
 from Main_bot.utils.openai_api import get_project_info_openai
-from Main_bot.utils.binance_api import pull_of_instruments, get_currency_info, timeframe_reterned
-from Main_bot.keyboards.mainkeyboard import keyboard_main_commands,keyboard_currency_list, keyboard_timeframes_list
+from Main_bot.utils.binance_api import pull_of_instruments, get_currency_info, timeframe_reterned, CoinAlert
+from Main_bot.keyboards.mainkeyboard import keyboard_main_commands, keyboard_currency_list, keyboard_timeframes_list, \
+    alet_direction_keyboard
 from Main_bot.states.states_main import CurrencyState
 from aiogram.fsm.context import FSMContext
 from ..keyboards.pagination import ReplyKeyboardPaginator
@@ -74,19 +75,37 @@ async def set_alert(message:Message, state:FSMContext):
 
 @router.message(CurrencyState.SET_ALERT, F.text.in_(pull_of_instruments))
 async def alert_set_currency(message:Message, state:FSMContext):
-    await message.answer(SET_ALERT)
+    await message.answer(text='Choose direction up or down.', reply_markup=alet_direction_keyboard)
+    await state.update_data(symbol=message.text)
+    await state.set_state(CurrencyState.CHOOSE_DIRECTION)
+
+# #@router.message(CurrencyState.SET_ALERT_PRICE)
+# #async def alert_set_price(message:Message, state:FSMContext, bot:Bot):
+#     #try:
+#         price = float(message.text) if "," not in message.text else float(message.text.replace(",","."))
+#         set_alert_job(price, chat_id=message.from_user.id)
+#         await message.answer('Alert seted')
+#         await state.clear()
+#     except ValueError:
+#         await message.answer("Please try again")
+
+@router.callback_query(F.data.in_(['up','down']))
+async def set_alert_price_up(callback:CallbackQuery,state:FSMContext):
+    await callback.message.answer(SET_ALERT)
+    await callback.answer('set_direction')
+    await state.update_data(alert_direction=callback.data)
     await state.set_state(CurrencyState.SET_ALERT_PRICE)
+
+
 
 @router.message(CurrencyState.SET_ALERT_PRICE)
 async def alert_set_price(message:Message, state:FSMContext, bot:Bot):
-    try:
-        price = float(message.text) if "," not in message.text else float(message.text.replace(",","."))
-        set_alert_job(price, chat_id=message.from_user.id)
-        await message.answer('Alert seted')
-        await state.clear()
-    except ValueError:
-        await message.answer("Please try again")
-
-
+    data = await state.get_data()
+    symbol = data['symbol']
+    price = float(message.text)
+    direction = data['alert_direction']
+    alert = CoinAlert(chat_id=message.chat.id,tg_bot=bot,symbol=symbol,price=price,direction=direction)
+    await alert.run()
+    await state.clear()
 
 

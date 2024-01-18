@@ -1,8 +1,17 @@
 import requests
 import ccxt
+import json
+import certifi
+import ssl
 from binance.client import Client
 from Config.settings import Config
 from Main_bot.utils.forcast import get_binance_signals
+import websockets
+from aiogram import Bot
+import asyncio
+
+#certifs = certifi.where('/Users/pasharybalchenko/Python_projects/Telegram_bot_main/venv/lib/python3.11/site-packages/certifi')
+#ssl_context = ssl.create_default_context(cafile=certifi)
 
 #Constants
 binance_api_url = "https://api.binance.com/api/v3"
@@ -76,9 +85,95 @@ timeframe_reterned = {
         '1 month':"1M"}
 
 
+class Klines:
+    def __init__(self,data):
+        self.open_time = data[0][0]
+        self.open_price = data[0][1]
+        self.high_price = data[0][2]
+        self.low_price = data[0][3]
+        self.close_price = data[0][4]
+        self.volume = data[0][5]
+        self._data = data
+class BinanceApi:
+    liquidity_volume = Config.LIQUIDITY_VOLUME
+    timeframes = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M']
+    timeframes = {
+        '1m': '1 minute',
+        '3m': '3 minutes',
+        '5m': '5 minutes',
+        '15m': '15 minutes',
+        '30m': '30 minutes',
+        '1h': '1 hour',
+        '2h': '2 hours',
+        '4h': '4 hours',
+        '6h': '6 hours',
+        '8h': '8 hours',
+        '12h': '12 hours',
+        '1d': '24 hours',
+        '3d': '3 days',
+        '1w': '1 week',
+        '1M': '1 month'}
+
+    timeframe_reterned = {
+        '1 minute': '1m',
+        '3 minutes': "3m",
+        '5 minutes': "5m",
+        '15 minutes': "15m",
+        '30 minutes': "30m",
+        '1 hour': "1h",
+        '2 hours': "2h",
+        '4 hours': "4h",
+        '6 hours': "6h",
+        '8 hours': "8h",
+        '12 hours': "12h",
+        '24 hours': "1d",
+        '3 days': "3d",
+        '1 week': "1w",
+        '1 month': "1M"}
+
+    def __init__(self,symbol,interval, limit=1):
+        self._key = Config.BINANCE_KEY
+        self._secret_key = Config.BINANCE_SECRET
+        self.client = Client(self._key, self._secret_key)
+        self.limit = limit
+        self.symbol = symbol
+        self.interval = interval
+        self.klines = Klines(self.client.get_klines(symbol=self.symbol,interval =self.interval,limit=self.limit))
 
 
-#Getting of list with USDT pairs
+    def get_current_price(self):
+        return self.klines.close_price
+
+    def get_timeframe_volume(self):
+        return self.klines.volume
+
+    def get_min_price(self):
+        lows = [k[3]for k in self.klines._data]
+        return ', '.join(lows)
+
+    def get_max_price(self):
+        maximum = [k[2] for k in self.klines._data]
+        return ', '.join(maximum)
+
+    def get_usdt_pairs(self):
+        data = self.client.get_all_tickers()
+        usdt_pairs = []
+        for tikers in data:
+            if 'USDT' in tikers.get("symbol"):
+                usdt_pairs.append(tikers.get('symbol'))
+        return usdt_pairs
+
+    def get_liquidity_instruments(self):
+        usd_pairs = self.get_usdt_pairs()
+        liquidity_instruments = []
+        data = self.client.get_ticker()
+        for symbol in data:
+            if float(symbol.get('quoteVolume')) > self.liquidity_volume and symbol.get('symbol') in usd_pairs:
+                liquidity_instruments.append(symbol.get('symbol'))
+        return liquidity_instruments
+
+
+
 def get_usdt_pairs():
     usdt_pairs = []
     url = f'{binance_api_url}/exchangeInfo'
@@ -177,4 +272,72 @@ def get_currency_info(symbol,timeframe):
                f'n0omik Forecast: {get_binance_signals(symbol)}'
     return text
 
-#print(get_currency_info("BTCUSDT","1d"))
+
+class CoinAlert:
+    url = 'wss://stream.binance.com/ws'
+
+    def __init__(self, chat_id, tg_bot, symbol, price,direction):
+        self.symbol = symbol
+        self.price = price
+        self.tg_bot = tg_bot
+        self.chat_id = chat_id
+        self.direction = direction
+
+    async def send_message(self, text):
+        # Реализация метода send_message
+        pass
+
+    async def on_open(self, ws):
+        sub_msg = {
+            "method": "SUBSCRIBE",
+            "params": [
+                "!miniTicker@arr",
+            ],
+            "id": 1,
+        }
+
+        await ws.send(json.dumps(sub_msg))
+    print('open connection')
+    async def alert_down(self, data, ws):
+            try:
+                for x in data:
+                    if x['s'] == 'BTCUSDT':
+                        print('BTCUSDT', x['c'])
+                    if x['s'] == self.symbol and float(x['c']) <= self.price:
+                        print(f'--{x["s"]} {x["c"]}--')
+                        await self.tg_bot.send_message(chat_id = self.chat_id, text = f"Price of {self.symbol} riched your alert price and now is {x['c']}.")
+                        await ws.close()
+            except Exception as e:
+                print(f"An error occurred: {e}")
+
+    async def alert_up(self, data, ws):
+            try:
+                for x in data:
+                    if x['s'] == 'BTCUSDT':
+                        print('BTCUSDT', x['c'])
+                    if x['s'] == self.symbol and float(x['c']) >= self.price:
+                        print(f'--{x["s"]} {x["c"]}--')
+                        await self.tg_bot.send_message(chat_id = self.chat_id, text = f"Price of {self.symbol} riched your alert price and now is {x['c']}.")
+                        await ws.close()
+            except Exception as e:
+                print(f"An error occurred: {e}")
+
+
+    async def on_message(self, message, ws):
+            data = json.loads(message)
+            if self.direction == 'down':
+                await self.alert_down(data,ws)
+            elif self.direction == 'up':
+                await self.alert_up(data,ws)
+
+    async def run(self):
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname=False
+        ssl_context.verify_mode=ssl.CERT_NONE
+        async with websockets.connect(self.url, ssl=ssl_context) as ws:
+            await self.on_open(ws)
+
+            while True:
+                response = await ws.recv()
+                await self.on_message(response,ws)
+
